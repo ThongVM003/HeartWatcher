@@ -1,0 +1,16 @@
+services:
+  mongo:
+    image: mongo:latest
+    ports:
+      - '27017:27017'
+    user: root:root
+    volumes:
+      - ${HOME}/.mongo_storage:/data/db:rw,z  
+    restart: always
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    restart: always
+volumes:
+  mongo:

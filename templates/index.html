@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Real-Time Heart Rate Charts</title>
+    <!--suppress JSUnresolvedLibraryURL -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.1/css/bootstrap.min.css"
+        integrity="sha512-T584yQ/tdRR5QwOpfvDfVQUidzfgc2339Lc8uBDtcp/wYu80d7jwBgAxbyMh0a9YM9F8N3tdErpFI8iaGx6x5g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!--suppress JSUnresolvedLibraryURL -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.css"
+        integrity="sha512-/zs32ZEJh+/EO2N1b0PEdoA10JkdC3zJ8L5FTiQu82LR9S/rOQNfQN7U59U9BC12swNeRAz3HSzIL2vpp4fv3w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <canvas id="canvas"></canvas>
+                            <h5 class="card-title">Next Heart Rate</h5>
+                            <p class="card-text" id="message"></p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+    <!--suppress JSUnresolvedLibraryURL -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+        integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!--suppress JSUnresolvedLibraryURL -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.1/js/bootstrap.bundle.min.js"
+        integrity="sha512-mULnawDVcCnsk9a4aG1QLZZ6rcce/jSzEGqUkeOLy0b6q0+T6syHrxlsAGH7ZVoqC93Pd0lBqd6WguPWih7VHA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!--suppress JSUnresolvedLibraryURL -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"
+        integrity="sha512-d9xgZrVZpmmQlfonhQUvTR7lMPtO7NkZMkA0ABN3PHCbKA5nqylQ/yWlFAyY6hYgdF1Qh6nYiuADWwKB4C2WSw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        // Get the data from the server. it is a list of dictionaries containing the time and value eg. {"timestamp" : "1720625887.678448", "bpm" : 93}
+        // Get list of data from the server
+
+
+        async function getData() {
+            // Get the data from the server /hr endpoint
+            const response = await fetch('/hr');
+            const data = await response.json();
+            return data;
+        }
+
+
+        // Update the chart with the new data and remove the old data
+        async function updateChart() {
+            const data = await getData();
+            const maxDataPoints = 60;
+            chart.then(chart => {
+                chart.data.labels = data.map(d => d.timestamp);
+                chart.data.datasets[0].data = data.map(d => d.bpm);
+                if (chart.data.labels.length > maxDataPoints) {
+                    chart.data.labels = chart.data.labels.slice(chart.data.labels.length - maxDataPoints);
+                    chart.data.datasets[0].data = chart.data.datasets[0].data.slice(chart.data.datasets[0].data.length - maxDataPoints);
+                }
+                chart.update();
+            });
+
+
+
+
+        }
+
+        // Create a chart with the initial data
+        async function createChart() {
+            const data = await getData();
+            console.log(data);
+            const ctx = document.getElementById('canvas').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.timestamp),
+                    datasets: [{
+                        label: 'Heart Rate',
+                        data: data.map(d => d.bpm),
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    },
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Creating Real-Time Charts with FastAPI'
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    hover: {
+                        mode: 'nearest',
+                        intersect: true
+                    },
+                }
+            });
+            return chart;
+        }
+
+        async function getNextHeartRate() {
+            const response = await fetch('/hr/next');
+            const data = await response.json();
+            return data;
+        }
+
+        async function updateNextHeartRate() {
+            const data = await getNextHeartRate();
+            if (data.bpm == 0) {
+                document.getElementById('message').innerText = `Not predicted`;
+            }
+            else if (data.bpm > 120) {
+
+                document.getElementById('message').innerText = `Heart rate in 10 second: ${data.bpm}. Your heartrate is getting high, slow down and take a breath`;}
+                else {
+                    document.getElementById('message').innerText = `Heart rate in 10 second: ${data.bpm}. Your heart rate is normal`;
+                }
+                
+        }
+
+        // Create the chart
+        let chart = createChart();
+
+        
+        // Update the chart every 1 second
+        setInterval(() => {
+            updateChart();
+            updateNextHeartRate();
+        }, 1000);
+
+    </script>
+</body>
+
+</html>

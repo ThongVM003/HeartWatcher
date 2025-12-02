@@ -1,5 +1,6 @@
 import os
 import time
+import asyncio
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -14,6 +15,7 @@ import datetime
 import redis
 from model import load_model
 import random
+from bluetooth_hr import HeartRateMonitor
 
 
 model = load_model()
@@ -26,10 +28,25 @@ re = redis.Redis(
     decode_responses=True,
 )
 
+# Initialize Bluetooth Heart Rate Monitor
+hr_monitor = HeartRateMonitor(db_client=db)
+
 means = [140.852179, 2.574585, 88.527766, 3221.042023]
 stds = [15.532219, 0.448150, 3.825462, 2631.164519]
 
 st = time.time()
+
+@app.on_event("startup")
+async def startup_event():
+    """Start the Bluetooth heart rate monitor when the app starts."""
+    print("Starting Bluetooth Heart Rate Monitor...")
+    asyncio.create_task(hr_monitor.start())
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Stop the Bluetooth heart rate monitor when the app shuts down."""
+    print("Stopping Bluetooth Heart Rate Monitor...")
+    hr_monitor.stop()
 
 @app.get("/api", include_in_schema=False)
 async def index():

@@ -1,3 +1,7 @@
 fastapi
 pymongo
 redis
+tensorflow-cpu
+uvicorn[standard]
+jinja2
+bleak

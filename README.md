@@ -3,6 +3,9 @@
 ## Introduction
 This project is a heart rate monitoring system that uses heart rate data sent from a smart watch. The system is designed to monitor the heart rate of a person and send an alert to the user if the heart rate is above or below a certain threshold. The system is designed to be used by people who have heart conditions or are at risk of heart problems.
 
+DEMO: ![](./assets/DEMO.mp4)
+
+
 ## Features
 - Monitor heart rate data sent from a smart watch
 - Provide real-time heart rate data
@@ -39,7 +42,8 @@ python api.py
 
 This will start the FastAPI server on `http://<your-ip-address>:6547`.
 
-Next, go to samsung store and search for "Heart Rate to Web For Streamers" and install the app on your smart watch.
+Next, go to store and search for "Heart Rate to Bluetooth" and install the app on your smart watch.
+Configure the app to connect bluetooth to your devices and the script will be started
 Configure the app to send heart rate data to the server running on `http://<your-ip-address>:6547`.
 
 Finally, open the browser and go to `http://<your-ip-address>:6547/chart` to see the real-time heart rate data and alerts.

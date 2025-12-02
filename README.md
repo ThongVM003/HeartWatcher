@@ -3,9 +3,8 @@
 ## Introduction
 This project is a heart rate monitoring system that uses heart rate data sent from a smart watch. The system is designed to monitor the heart rate of a person and send an alert to the user if the heart rate is above or below a certain threshold. The system is designed to be used by people who have heart conditions or are at risk of heart problems.
 
-DEMO: ![](./assets/DEMO.mp4)
-
-
+DEMO: 
+<video src="https://github.com/user-attachments/assets/1d47a674-1145-4b0d-8308-55d22efb71df" controls preload></video>
 ## Features
 - Monitor heart rate data sent from a smart watch
 - Provide real-time heart rate data
